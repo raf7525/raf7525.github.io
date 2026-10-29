@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rafael — Portfólio</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 900px; margin: 0 auto; padding: 24px 16px; background:#0f1115; color:#e6e6e6; }
+    header { display:flex; gap:16px; align-items:center; margin-bottom:32px; }
+    header img { width:80px; border-radius:50%; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+    .card { background:#181b22; border:1px solid #2a2f3a; border-radius:10px; padding:16px; }
+    .card a { color:#7cb7ff; text-decoration:none; font-weight:600; }
+    .meta { font-size:13px; opacity:.7; margin-top:8px; }
+  </style>
+</head>
+<body>
+  <header id="perfil"></header>
+  <div class="grid" id="repos"></div>
+
+  <script>
+    const USER = "seu-usuario-aqui";
+
+    fetch(`https://api.github.com/users/${USER}`).then(r => r.json()).then(u => {
+      document.getElementById("perfil").innerHTML = `
+        <img src="${u.avatar_url}" alt="">
+        <div><h1>${u.name ?? u.login}</h1><p>${u.bio ?? ""}</p></div>`;
+    });
+
+    fetch(`https://api.github.com/users/${USER}/repos?per_page=100&sort=pushed`)
+      .then(r => r.json())
+      .then(repos => {
+        const lista = repos
+          .filter(r => !r.fork)
+          // Opcional: mostrar só repos com o tópico "portfolio"
+          // .filter(r => r.topics?.includes("portfolio"))
+          .sort((a, b) => b.stargazers_count - a.stargazers_count);
+
+        document.getElementById("repos").innerHTML = lista.map(r => `
+          <div class="card">
+            <a href="${r.homepage || r.html_url}" target="_blank">${r.name}</a>
+            <p>${r.description ?? ""}</p>
+            <div class="meta">${r.language ?? ""} · ★ ${r.stargazers_count}</div>
+          </div>`).join("");
+      });
+  </script>
+</body>
+</html>
